@@ -473,6 +473,10 @@ class ServiceDetailView(DetailView):
 
         context['form'] = ImageForm()
 
+        context['localities'] = Locality.objects.filter(stoppoint__service=self.object).distinct()
+        stops = self.object.stops.all().select_related('locality').defer('osm', 'locality__latlong')
+        context['stops'] = stops
+
         if self.object.show_timetable:
             date = self.request.GET.get('date')
             today = timezone.now().date()
@@ -501,8 +505,7 @@ class ServiceDetailView(DetailView):
             ).defer('stop__osm', 'stop__locality__latlong')
             context['has_minor_stops'] = any(s.timing_status == 'OTH' for s in context['stopusages'])
         else:
-            stops_dict = {stop.pk: stop for stop in self.object.stops.all().select_related(
-                'locality').defer('osm', 'latlong', 'locality__latlong')}
+            stops_dict = {stop.pk: stop for stop in stops}
             for table in context['timetables']:
                 table.groupings = [grouping for grouping in table.groupings
                                    if type(grouping.rows) is not list or

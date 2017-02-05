@@ -25,6 +25,34 @@
     <p class="warning">{{ note|safe }}</p>
 {% endfor %}
 
+{% if object.geometry %}
+    <svg id="routemap" width="800" height="600"><g transform="translate(20, 20)"></g></svg>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+        var geometry = {{ object.geometry.merged.json|safe }},
+            localities = [{% for locality in localities %}['{{ locality.name }}', ['{{ locality.latlong.x }}', '{{ locality.latlong.y }}']],{% endfor %}],
+            stops = [{% for stop in stops %}{{ stop.latlong.json|safe }},{% endfor %}],
+            projection = d3.geoMercator().fitSize([760, 560], geometry),
+            geoPath = d3.geoPath(projection);
+
+        var canvas = d3.select('#routemap g');
+        canvas.append('path')
+            .attr('d', geoPath(geometry))
+            .style('fill', 'none')
+            .style('stroke', '#ed8')
+            .style('stroke-width', 2)
+            .style('stroke-linejoin', 'round')
+            ;
+        canvas.selectAll('text').data(localities).enter().append('text')
+            .text(function(d) { return d[0] })
+            .attr('x', function(d) {return projection(d[1])[0]})
+            .attr('y', function(d) {return projection(d[1])[1]})
+            .style('text-anchor', 'middle')
+            ;
+    </script>
+{% endif %}
+
 {% for timetable in timetables %}
     <form class="timetable-date">
         <select onchange="this.form.submit()" name="date">
