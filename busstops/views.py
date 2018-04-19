@@ -418,6 +418,11 @@ class StopPointDetailView(UppercasePrimaryKeyMixin, DetailView):
         ) if crumb is not None]
         return context
 
+    def render_to_response(self, context):
+        response = super().render_to_response(context)
+        response['X-Accel-Buffering'] = 'no'
+        return response
+
 
 def stop_json(_, pk):
     stop = get_object_or_404(StopPoint, atco_code=pk)
@@ -690,3 +695,23 @@ def journey(request):
         'to_options': to_options.load_all(),
         'journeys': journeys
     })
+
+
+def departures(request, pk):
+    departures = cache.get(pk)
+    context = {}
+    if not departures:
+        stop = get_object_or_404(StopPoint, atco_code=pk)
+        services = stop.service_set.filter(current=True).defer('geometry')
+        bot = request.META.get('HTTP_X_BOT')
+        departures, max_age = live.get_departures(stop, services, bot)
+        if hasattr(departures['departures'], 'get_departures'):
+            departures['departures'] = departures['departures'].get_departures()
+        if max_age:
+            cache.set(pk, departures, max_age)
+
+    context.update(departures)
+    if context['departures']:
+        context['live'] = any(item.get('live') for item in context['departures'])
+
+    return render(request, 'departures.html', context)

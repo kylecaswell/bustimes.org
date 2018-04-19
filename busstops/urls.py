@@ -23,6 +23,7 @@ urlpatterns = [
     url(r'^localities/(?P<pk>[ENen][Ss]?[0-9]+)', views.LocalityDetailView.as_view()),
     url(r'^localities/(?P<slug>[\w-]+)', views.LocalityDetailView.as_view(), name='locality_detail'),
     url(r'^stops/(?P<pk>\w+)\.json', views.stop_json),
+    url(r'^stops/(?P<pk>[\w-]+)/departures', views.departures),
     url(r'^stops/(?P<pk>[\w-]+)', views.StopPointDetailView.as_view(), name='stoppoint_detail'),
     url(r'^operators/(?P<pk>[A-Z]+)$', views.OperatorDetailView.as_view()),
     url(r'^operators/(?P<slug>[\w-]+)', views.OperatorDetailView.as_view(), name='operator_detail'),

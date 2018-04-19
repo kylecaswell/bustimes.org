@@ -19,7 +19,7 @@
 
 <div class="asides">
 
-{% include 'departures.html' with departures=departures %}
+<esi:include src="{{ stoppoint.get_absolute_url }}/departures" />
 
 {% if services %}
     <div class="aside box">
