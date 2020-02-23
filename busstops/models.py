@@ -16,7 +16,7 @@ from django.urls import reverse
 from django.utils.text import slugify
 from multigtfs.models import Feed
 from timetables import gtfs
-from bustimes.models import Route
+from bustimes.models import Route, ValidateOnSaveMixin
 from bustimes.timetables import Timetable
 
 
@@ -30,14 +30,6 @@ TIMING_STATUS_CHOICES = (
     ('OTH', 'Other bus stop'),
 )
 SERVICE_ORDER_REGEX = re.compile(r'(\D*)(\d*)(\D*)')
-
-
-class ValidateOnSaveMixin:
-    """https://www.xormedia.com/django-model-validation-on-save/"""
-    def save(self, force_insert=False, force_update=False, **kwargs):
-        if not (force_insert or force_update):
-            self.full_clean()
-        super().save(force_insert, force_update, **kwargs)
 
 
 class Region(models.Model):
@@ -341,6 +333,18 @@ class StopPoint(models.Model):
         return [service.line_name for service in sorted(self.current_services, key=Service.get_order)]
 
 
+class StopCode(models.Model):
+    stop = models.ForeignKey(StopPoint, models.CASCADE)
+    source = models.ForeignKey(DataSource, models.CASCADE)
+    code = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('code', 'source')
+
+    def __str__(self):
+        return self.code
+
+
 class Operator(ValidateOnSaveMixin, models.Model):
     """An entity that operates public transport services"""
 
@@ -405,18 +409,6 @@ class Operator(ValidateOnSaveMixin, models.Model):
         if not mode or mode[0].lower() in 'aeiou':
             return 'An ' + mode  # 'An airline' or 'An '
         return 'A ' + mode  # 'A hovercraft'
-
-
-class StopCode(models.Model):
-    stop = models.ForeignKey(StopPoint, models.CASCADE)
-    source = models.ForeignKey(DataSource, models.CASCADE)
-    code = models.CharField(max_length=100)
-
-    class Meta:
-        unique_together = ('code', 'source')
-
-    def __str__(self):
-        return self.code
 
 
 class OperatorCode(models.Model):
@@ -724,15 +716,6 @@ class ServiceCode(models.Model):
     def get_routes(self):
         feed = Feed.objects.filter(name=self.scheme.split()[0]).latest('created')
         return feed.route_set.filter(feed=feed, route_id=self.code)
-
-
-class ServiceDate(models.Model):
-    service = models.ForeignKey('Service', models.CASCADE)
-    date = models.DateField()
-    end = models.DateTimeField(null=True)
-
-    class Meta():
-        unique_together = ('service', 'date')
 
 
 class ServiceLink(models.Model):
