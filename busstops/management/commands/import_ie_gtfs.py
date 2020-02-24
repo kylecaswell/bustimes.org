@@ -9,7 +9,8 @@ from django.conf import settings
 from django.utils import timezone
 from multigtfs.models import Feed
 from timetables.gtfs import get_stop_id, get_timetable
-from ...models import Operator, DataSource, Service, StopPoint, StopUsage, Region, ServiceCode
+from bustimes.models import Operator, Service, ServiceCode, StopUsage
+from ...models import StopPoint, Region, DataSource
 
 
 MODES = {

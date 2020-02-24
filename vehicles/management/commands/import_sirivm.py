@@ -6,7 +6,8 @@ from requests.exceptions import RequestException
 from django.contrib.gis.geos import Point
 from django.db.models import Q
 from isodate import parse_duration
-from busstops.models import Operator, Service, Locality, DataSource
+from busstops.models import Locality, DataSource
+from bustimes.models import Operator, Service
 from ..import_live_vehicles import ImportLiveVehiclesCommand
 from ...models import Vehicle, VehicleLocation, VehicleJourney, JourneyCode
 

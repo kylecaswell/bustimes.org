@@ -8,7 +8,8 @@ from time import sleep
 from django.db import Error, IntegrityError, InterfaceError
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from busstops.models import DataSource, ServiceCode
+from busstops.models import DataSource
+from bustimes.models import ServiceCode
 from ..models import Vehicle, VehicleLocation
 
 

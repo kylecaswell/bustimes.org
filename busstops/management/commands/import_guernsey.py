@@ -8,7 +8,8 @@ from django.conf import settings
 from django.contrib.gis.geos import Point, LineString, MultiLineString
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from ...models import Region, StopPoint, Service, StopUsage, Operator
+from bustimes.models import Service, StopUsage, Operator
+from ...models import Region, StopPoint
 
 
 def get_stop_defaults(name, region):

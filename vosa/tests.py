@@ -1,6 +1,7 @@
 import os
 from django.test import TestCase
-from busstops.models import Region, Operator
+from busstops.models import Region
+from bustimes.models import Operator
 from .models import Licence
 from .management.commands import import_variations
 

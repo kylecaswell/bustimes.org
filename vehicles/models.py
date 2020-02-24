@@ -14,7 +14,6 @@ from django.core.exceptions import ValidationError
 from django.db.models import Index, Q
 from django.urls import reverse
 from django.utils.html import escape, format_html
-from busstops.models import Operator, Service, StopPoint, DataSource, SIRISource
 import json
 
 
@@ -141,9 +140,9 @@ class Vehicle(models.Model):
     fleet_number = models.PositiveIntegerField(null=True, blank=True)
     fleet_code = models.CharField(max_length=24, blank=True)
     reg = models.CharField(max_length=24, blank=True)
-    source = models.ForeignKey(DataSource, models.CASCADE, null=True, blank=True)
-    operator = models.ForeignKey(Operator, models.SET_NULL, null=True, blank=True)
-    vehicle_type = models.ForeignKey(VehicleType, models.SET_NULL, null=True, blank=True)
+    source = models.ForeignKey('busstops.DataSource', models.CASCADE, null=True, blank=True)
+    operator = models.ForeignKey('bustimes.Operator', models.SET_NULL, null=True, blank=True)
+    vehicle_type = models.ForeignKey('VehicleType', models.SET_NULL, null=True, blank=True)
     colours = models.CharField(max_length=255, blank=True)
     livery = models.ForeignKey(Livery, models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=255, blank=True)
@@ -324,10 +323,10 @@ class VehicleEdit(models.Model):
 
 class VehicleJourney(models.Model):
     datetime = models.DateTimeField()
-    service = models.ForeignKey(Service, models.SET_NULL, null=True, blank=True)
+    service = models.ForeignKey('bustimes.Service', models.SET_NULL, null=True, blank=True)
     route_name = models.CharField(max_length=64, blank=True)
-    source = models.ForeignKey(DataSource, models.CASCADE)
-    vehicle = models.ForeignKey(Vehicle, models.CASCADE, null=True, blank=True)
+    source = models.ForeignKey('busstops.DataSource', models.CASCADE)
+    vehicle = models.ForeignKey('Vehicle', models.CASCADE, null=True, blank=True)
     code = models.CharField(max_length=255, blank=True)
     destination = models.CharField(max_length=255, blank=True)
     direction = models.CharField(max_length=8, blank=True)
@@ -360,7 +359,7 @@ class VehicleJourney(models.Model):
 class Call(models.Model):
     journey = models.ForeignKey(VehicleJourney, models.CASCADE, editable=False)
     visit_number = models.PositiveSmallIntegerField()
-    stop = models.ForeignKey(StopPoint, models.CASCADE)
+    stop = models.ForeignKey('busstops.StopPoint', models.CASCADE)
     aimed_arrival_time = models.DateTimeField(null=True)
     expected_arrival_time = models.DateTimeField(null=True)
     aimed_departure_time = models.DateTimeField(null=True)
@@ -388,9 +387,9 @@ class Call(models.Model):
 
 class JourneyCode(models.Model):
     code = models.CharField(max_length=64, blank=True)
-    service = models.ForeignKey(Service, models.SET_NULL, null=True, blank=True)
-    data_source = models.ForeignKey(DataSource, models.SET_NULL, null=True, blank=True)
-    siri_source = models.ForeignKey(SIRISource, models.SET_NULL, null=True, blank=True)
+    service = models.ForeignKey('bustimes.Service', models.SET_NULL, null=True, blank=True)
+    data_source = models.ForeignKey('busstops.DataSource', models.SET_NULL, null=True, blank=True)
+    siri_source = models.ForeignKey('busstops.SIRISource', models.SET_NULL, null=True, blank=True)
     destination = models.CharField(max_length=255, blank=True)
 
     class Meta:

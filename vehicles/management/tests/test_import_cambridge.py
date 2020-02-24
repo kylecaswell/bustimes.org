@@ -2,7 +2,8 @@ import requests
 from django.test import TestCase
 from freezegun import freeze_time
 from pyppeteer.errors import NetworkError
-from busstops.models import DataSource, Region, Operator
+from busstops.models import DataSource, Region
+from bustimes.models import Operator
 from ...models import Vehicle
 from ..commands import import_cambridge
 

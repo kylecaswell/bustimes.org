@@ -2,7 +2,8 @@ import os
 from mock import patch
 from vcr import use_cassette
 from django.test import TestCase
-from busstops.models import Region, Operator, DataSource
+from busstops.models import Region, DataSource
+from bustimes.models import Operator
 from ...models import VehicleLocation
 from ..commands import import_live_acis
 

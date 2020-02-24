@@ -2,7 +2,7 @@ import requests
 from django import forms
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-from busstops.models import Operator
+from bustimes.models import Operator
 from .models import VehicleType, VehicleFeature, Livery
 
 

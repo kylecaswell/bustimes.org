@@ -3,7 +3,8 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
-from busstops.models import DataSource, Region, Operator, Service
+from busstops.models import DataSource, Region
+from bustimes.models import Operator, Service
 from .models import Vehicle, VehicleType, VehicleFeature, Livery, VehicleJourney, VehicleLocation, VehicleEdit
 from . import admin
 

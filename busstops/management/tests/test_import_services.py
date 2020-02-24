@@ -6,8 +6,8 @@ from freezegun import freeze_time
 from django.test import TestCase, override_settings
 from django.contrib.gis.geos import Point
 from django.core.management import call_command
-from bustimes.management.commands import import_transxchange
-from ...models import Operator, DataSource, OperatorCode, Service, Region, StopPoint, ServiceLink
+from bustimes.management.commands import import_transxchange, Operator, DataSource, OperatorCode, Service, ServiceLink
+from ...models import Region, StopPoint
 
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures')

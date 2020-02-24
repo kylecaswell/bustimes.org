@@ -1,6 +1,7 @@
 import os
 from django.test import TestCase
-from ...models import Region, Operator, DataSource, OperatorCode
+from bustimes.models import Operator, OperatorCode
+from ...models import Region, DataSource
 from ..commands import import_operator_contacts
 
 

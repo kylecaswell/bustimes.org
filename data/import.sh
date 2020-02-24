@@ -127,8 +127,6 @@ elif [ -f Stops.csv ]; then
     tr -d '\000' < StopAreas.csv | ../../manage.py import_stop_areas && rm StopAreas.csv
     echo "  Stops in area"
     tr -d '\000' < StopsInArea.csv | ../../manage.py import_stops_in_area && rm StopsInArea.csv
-    echo "  Stops in area"
-    tr -d '\000' < CoachReferences.csv | ../../manage.py import_coach_references && rm CoachReferences.csv
 fi
 
 

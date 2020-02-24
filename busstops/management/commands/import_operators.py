@@ -6,8 +6,9 @@ Usage:
 
 from django.utils import timezone
 from vosa.models import Licence
+from bustimes.models import Operator, OperatorCode
+from .models import DataSource
 from ..import_from_csv import ImportFromCSVCommand
-from ...models import Operator, OperatorCode, DataSource
 
 
 class Command(ImportFromCSVCommand):

@@ -15,6 +15,12 @@ from django.urls import reverse
 # from .timetables import Timetable
 
 
+TIMING_STATUS_CHOICES = (
+    ('PPT', 'Principal point'),
+    ('TIP', 'Time info point'),
+    ('PTP', 'Principal and time info point'),
+    ('OTH', 'Other bus stop'),
+)
 SERVICE_ORDER_REGEX = re.compile(r'(\D*)(\d*)(\D*)')
 
 
@@ -42,15 +48,6 @@ class ValidateOnSaveMixin:
         super().save(force_insert, force_update, **kwargs)
 
 
-class DataSource(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    url = models.URLField(blank=True)
-    datetime = models.DateTimeField(null=True, blank=True)
-
-    def __str__(self):
-        return self.name
-
-
 class Operator(ValidateOnSaveMixin, models.Model):
     """An entity that operates public transport services"""
 
@@ -68,7 +65,7 @@ class Operator(ValidateOnSaveMixin, models.Model):
     phone = models.CharField(max_length=128, blank=True)
     twitter = models.CharField(max_length=255, blank=True)
 
-    # licences = models.ManyToManyField('vosa.Licence', blank=True)
+    licences = models.ManyToManyField('vosa.Licence', blank=True)
     payment_methods = models.ManyToManyField('PaymentMethod', blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
 
@@ -119,7 +116,7 @@ class Operator(ValidateOnSaveMixin, models.Model):
 
 class OperatorCode(models.Model):
     operator = models.ForeignKey(Operator, models.CASCADE)
-    source = models.ForeignKey(DataSource, models.CASCADE)
+    source = models.ForeignKey('busstops.DataSource', models.CASCADE)
     code = models.CharField(max_length=100, db_index=True)
 
     class Meta:
@@ -127,6 +124,23 @@ class OperatorCode(models.Model):
 
     def __str__(self):
         return self.code
+
+
+class StopUsage(models.Model):
+    """A link between a StopPoint and a Service,
+    with an order placing it in a direction (e.g. the first outbound stop)"""
+    service = models.ForeignKey('Service', models.CASCADE)
+    stop = models.ForeignKey('busstops.StopPoint', models.CASCADE)
+    direction = models.CharField(max_length=8)
+    order = models.PositiveIntegerField()
+    timing_status = models.CharField(max_length=3,
+                                     choices=TIMING_STATUS_CHOICES)
+
+    class Meta():
+        ordering = ('direction', 'order')
+
+    def is_minor(self):
+        return self.timing_status == 'OTH' or self.timing_status == 'TIP'
 
 
 class Service(models.Model):
@@ -139,19 +153,19 @@ class Service(models.Model):
     inbound_description = models.CharField(max_length=255, blank=True)
     slug = AutoSlugField(populate_from=str, editable=True, unique=True)
     mode = models.CharField(max_length=11)
-    operator = models.ManyToManyField('busstops.Operator', blank=True)
-    # region = models.ForeignKey('busstops.Region', models.CASCADE, null=True)
+    operator = models.ManyToManyField('bustimes.Operator', blank=True)
+    region = models.ForeignKey('busstops.Region', models.CASCADE, null=True)
     stops = models.ManyToManyField('busstops.StopPoint', editable=False,
-                                   through='busstops.StopUsage')
+                                   through='bustimes.StopUsage')
     date = models.DateField()
     current = models.BooleanField(default=True, db_index=True)
     show_timetable = models.BooleanField(default=False)
     timetable_wrong = models.BooleanField(default=False)
     geometry = models.MultiLineStringField(null=True, editable=False)
 
-    source = models.ForeignKey(DataSource, models.SET_NULL, null=True, blank=True)
+    source = models.ForeignKey('busstops.DataSource', models.SET_NULL, null=True, blank=True)
     tracking = models.NullBooleanField()
-    payment_methods = models.ManyToManyField('busstops.PaymentMethod', blank=True)
+    payment_methods = models.ManyToManyField('PaymentMethod', blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
 
     class Meta():
@@ -396,24 +410,6 @@ class Contact(models.Model):
     referrer = models.URLField(blank=True)
 
 
-class SIRISource(models.Model):
-    name = models.CharField(max_length=255)
-    url = models.URLField()
-    requestor_ref = models.CharField(max_length=255, blank=True)
-    admin_areas = models.ManyToManyField('busstops.AdminArea', blank=True)
-
-    def __str__(self):
-        return self.name
-
-    def get_poorly_key(self):
-        return '{}:{}:poorly'.format(self.url, self.requestor_ref)
-
-    def get_poorly(self):
-        return cache.get(self.get_poorly_key())
-
-    get_poorly.short_description = 'Poorly'
-
-
 class Route(models.Model):
     source = models.ForeignKey('busstops.DataSource', models.CASCADE)
     code = models.CharField(max_length=255)
@@ -423,7 +419,7 @@ class Route(models.Model):
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
     dates = DateRangeField(null=True, blank=True)
-    service = models.ForeignKey('busstops.Service', models.CASCADE)
+    service = models.ForeignKey('Service', models.CASCADE)
 
     class Meta:
         unique_together = ('source', 'code')
@@ -457,7 +453,7 @@ class Calendar(models.Model):
 
 
 class CalendarDate(models.Model):
-    calendar = models.ForeignKey(Calendar, models.CASCADE)
+    calendar = models.ForeignKey('Calendar', models.CASCADE)
     start_date = models.DateField(db_index=True)
     end_date = models.DateField(null=True, blank=True, db_index=True)
     dates = DateRangeField(null=True)
@@ -478,7 +474,7 @@ class Trip(models.Model):
     inbound = models.BooleanField(default=False)
     journey_pattern = models.CharField(max_length=255, blank=True)
     destination = models.ForeignKey('busstops.StopPoint', models.CASCADE)
-    calendar = models.ForeignKey(Calendar, models.CASCADE)
+    calendar = models.ForeignKey('Calendar', models.CASCADE)
     sequence = models.PositiveSmallIntegerField(null=True, blank=True)
     notes = models.ManyToManyField(Note, blank=True)
     start = models.DurationField()

@@ -13,8 +13,8 @@ from django.core.cache import cache
 from django.db import DatabaseError
 from django.db.models import Q
 from django.utils import timezone
-from busstops.models import Service, ServiceCode, DataSource, SIRISource
-from bustimes.models import get_calendars, StopTime
+from busstops.models import SIRISource, DataSource
+from bustimes.models import get_calendars, StopTime, Service, ServiceCode
 from vehicles.models import Vehicle, VehicleJourney
 from vehicles.tasks import create_service_code, create_journey_code
 

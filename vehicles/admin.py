@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.db.models import Count, Q
 from django.db.utils import ConnectionDoesNotExist
-from busstops.models import Operator
+from bustimes.models import Operator
 from .models import VehicleType, VehicleFeature, Vehicle, VehicleEdit, VehicleJourney, Livery, JourneyCode
 
 

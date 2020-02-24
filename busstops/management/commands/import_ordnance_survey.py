@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
 from django.utils import timezone
-from busstops.models import Locality, DataSource, Place
+from busstops.models import Locality, Place, DataSource
 
 
 class Command(BaseCommand):

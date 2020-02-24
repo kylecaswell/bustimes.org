@@ -67,7 +67,6 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
     },
 }
-HAYSTACK_IDENTIFIER_METHOD = 'buses.utils.get_identifier'
 
 DATABASES = {
     'default': {

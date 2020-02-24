@@ -7,7 +7,8 @@ from django.contrib.gis.geos import Point
 from django.db import transaction
 from django.utils import timezone
 from multigtfs.models import Feed, Stop
-from ...models import Region, Operator, Service, ServiceCode, DataSource, StopPoint, StopUsage
+from bustimes.models import Operator, Service, ServiceCode, StopUsage
+from ...models import DataSource, Region, StopPoint
 from .import_ie_gtfs import download_if_modified, get_timetable
 
 

@@ -14,7 +14,8 @@ from django.core.mail import EmailMessage
 from haystack.query import SearchQuerySet
 from departures import live
 from .utils import format_gbp, get_bounding_box
-from .models import Region, StopPoint, AdminArea, Locality, District, Operator, Service, Note, Place
+from bustimes.models import Operator, Service, Note
+from .models import Region, StopPoint, AdminArea, Locality, District, Place
 from .forms import ContactForm
 
 

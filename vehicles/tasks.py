@@ -1,8 +1,9 @@
 from celery import shared_task
-from busstops.models import DataSource, ServiceCode
 import xml.etree.cElementTree as ET
 from io import StringIO
 from .management.commands import import_sirivm
+from busstops.models import DataSource
+from bustimes.models import ServiceCode
 from .models import JourneyCode
 from .siri_et import siri_et
 

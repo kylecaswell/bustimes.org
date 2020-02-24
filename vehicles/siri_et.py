@@ -1,7 +1,8 @@
 import xml.etree.cElementTree as ET
 from io import StringIO
 from ciso8601 import parse_datetime
-from busstops.models import Service, DataSource
+from bustimes.models import Service
+from busstops.models import DataSource
 from .models import Vehicle, VehicleLocation, VehicleJourney, Call
 
 

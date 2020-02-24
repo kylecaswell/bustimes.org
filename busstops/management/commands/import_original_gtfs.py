@@ -4,7 +4,8 @@ from django.contrib.gis.geos import LineString, MultiLineString
 from django.conf import settings
 from django.db import transaction
 from multigtfs.models import Feed
-from ...models import DataSource, Service, ServiceCode, StopPoint, StopUsage
+from bustimes.models import Service, ServiceCode, StopUsage
+from ...models import StopPoint, DataSource
 from timetables.gtfs import get_timetable
 
 
