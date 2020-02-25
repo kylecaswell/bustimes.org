@@ -18,8 +18,8 @@ from django.contrib.gis.geos import LineString, MultiLineString
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
-from busstops.models import (Operator, Service, DataSource, StopPoint, StopUsage, ServiceCode)
-from ...models import Route, Calendar, CalendarDate, Trip, StopTime, Note
+from busstops.models import DataSource, StopPoint
+from ...models import Operator, Service, Route, Calendar, CalendarDate, Trip, StopTime, Note, StopUsage, ServiceCode
 from timetables.txc import TransXChange, Grouping, sanitize_description_part
 
 
@@ -437,8 +437,10 @@ class Command(BaseCommand):
                     if grouping.rows:
                         stop_usages += [
                             StopUsage(
-                                service_id=service_code, stop_id=row.part.stop.atco_code,
-                                direction=grouping.direction, order=i, timing_status=row.part.timingstatus
+                                order=i,
+                                stop_id=row.part.stop.atco_code,
+                                direction=grouping.direction,
+                                timing_status=row.part.timingstatus
                             )
                             for i, row in enumerate(grouping.rows) if row.part.stop.atco_code in stops
                         ]
@@ -482,6 +484,8 @@ class Command(BaseCommand):
                     self.service_codes.add(service_code)
                     self.source.route_set.filter(service=service_code).delete()
                     service.stops.clear()
+            for stop_usage in stop_usages:
+                stop_usage.service = service
             StopUsage.objects.bulk_create(stop_usages)
 
             # a code used in Traveline Cymru URLs:

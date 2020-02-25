@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.utils.timezone import make_aware
 from django.contrib.gis.geos import Point
-from busstops.models import Service
+from bustimes.models import Service
 from ...models import VehicleLocation, VehicleJourney
 from ..import_live_vehicles import ImportLiveVehiclesCommand
 
@@ -9,7 +9,7 @@ from ..import_live_vehicles import ImportLiveVehiclesCommand
 class Command(ImportLiveVehiclesCommand):
     url = 'http://tfe-opendata.com/api/v1/vehicle_locations'
     source_name = 'TfE'
-    services = Service.objects.filter(operator__in=('LOTH', 'EDTR', 'ECBU', 'NELB'), current=True)
+    services = Service.objects.filter(operator__code__in=('LOTH', 'EDTR', 'ECBU', 'NELB'), current=True)
 
     @staticmethod
     def get_datetime(item):

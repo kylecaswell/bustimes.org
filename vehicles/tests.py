@@ -18,9 +18,9 @@ class VehiclesTests(TestCase):
 
         ea = Region.objects.create(id='EA', name='East Anglia')
 
-        cls.bova = Operator.objects.create(region=ea, name='Bova and Over', id='BOVA', slug='bova-and-over',
+        cls.bova = Operator.objects.create(region=ea, name='Bova and Over', code='BOVA', slug='bova-and-over',
                                            parent='Madrigal Electromotive')
-        cls.lynx = Operator.objects.create(region=ea, name='Lynx', id='LYNX', slug='lynx',
+        cls.lynx = Operator.objects.create(region=ea, name='Lynx', code='LYNX', slug='lynx',
                                            parent='Madrigal Electromotive')
 
         tempo = VehicleType.objects.create(name='Optare Tempo', coach=False, double_decker=False)
@@ -91,7 +91,7 @@ class VehiclesTests(TestCase):
         self.assertEqual(200, response.status_code)
 
         with self.assertNumQueries(0):
-            response = self.client.get('/journeys/1.json')
+            response = self.client.get('/journeys/0.json')
         self.assertEqual([], response.json())
 
     def test_feature(self):

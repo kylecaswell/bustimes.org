@@ -6,7 +6,8 @@ from django.test import TestCase
 from django.core import mail
 from django.contrib.gis.geos import Point
 from django.shortcuts import render
-from .models import Region, AdminArea, District, Locality, StopPoint, StopUsage, Operator, Service, Note
+from bustimes.models import StopUsage, Operator, Service, Note
+from .models import Region, AdminArea, District, Locality, StopPoint
 
 
 DIR = os.path.dirname(os.path.abspath(__file__))

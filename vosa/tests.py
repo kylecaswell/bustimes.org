@@ -52,7 +52,7 @@ Other details: Daily Service Every Twenty Minutes""",
         }
         command.handle_row(data)
         Region.objects.create(id='SW', name='South West')
-        operator = Operator.objects.create(region_id='SW', id='AINS', name="Ainsley's Chariots")
+        operator = Operator.objects.create(region_id='SW', code='AINS', name="Ainsley's Chariots")
         operator.licences.add(Licence.objects.get())
 
     def test_licence_view(self):

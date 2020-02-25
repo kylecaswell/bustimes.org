@@ -26,7 +26,7 @@ class Command(BaseCommand):
             try:
                 operator = Operator.objects.get(operatorcode__code=ref, operatorcode__source=self.source)
             except Operator.DoesNotExist:
-                operator = Operator.objects.get(pk=ref)
+                operator = Operator.objects.get(code=ref)
         except Operator.DoesNotExist as e:
             print(e, ref)
             return

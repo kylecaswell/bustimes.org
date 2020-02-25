@@ -1,7 +1,8 @@
 from warnings import catch_warnings
 from django.test import TestCase
 from django.core.management import call_command
-from .models import Region, AdminArea, Locality, Operator, Service
+from bustimes.models import Operator, Service
+from .models import Region, Locality, AdminArea
 from .search_indexes import LocalityIndex, OperatorIndex, ServiceIndex
 
 

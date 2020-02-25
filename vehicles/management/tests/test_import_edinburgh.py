@@ -1,5 +1,6 @@
 from django.test import TestCase
-from busstops.models import DataSource, Region, Operator, Service
+from busstops.models import DataSource, Region
+from bustimes.models import Operator, Service
 from ..commands.import_edinburgh import Command
 
 
@@ -8,7 +9,7 @@ class EdinburghImportTest(TestCase):
     def setUpTestData(cls):
         source = DataSource.objects.create(name='TfE', url='', datetime='1066-01-01 12:18Z')
         Region.objects.create(name='Scotland', id='S')
-        cls.operator = Operator.objects.create(name='Lothian Buses', id='LOTH', region_id='S')
+        cls.operator = Operator.objects.create(name='Lothian Buses', code='LOTH', region_id='S')
         cls.service = Service.objects.create(line_name='11', date='1904-05-05', current=True)
         cls.service.operator.add(cls.operator)
         cls.command = Command()

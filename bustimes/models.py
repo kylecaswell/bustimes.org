@@ -10,7 +10,7 @@ from django.contrib.postgres.search import SearchVectorField
 from django.contrib.postgres.fields import DateRangeField
 from django.core.cache import cache
 from django.urls import reverse
-# from multigtfs.models import Feed
+from multigtfs.models import Feed
 # from timetables import gtfs
 # from .timetables import Timetable
 
@@ -376,12 +376,12 @@ class ServiceCode(models.Model):
     class Meta():
         unique_together = ('service', 'scheme', 'code')
 
-    # def __str__(self):
-    #     return '{} {}'.format(self.scheme, self.code)
+    def __str__(self):
+        return '{} {}'.format(self.scheme, self.code)
 
-    # def get_routes(self):
-    #     feed = Feed.objects.filter(name=self.scheme.split()[0]).latest('created')
-    #     return feed.route_set.filter(feed=feed, route_id=self.code)
+    def get_routes(self):
+        feed = Feed.objects.filter(name=self.scheme.split()[0]).latest('created')
+        return feed.route_set.filter(feed=feed, route_id=self.code)
 
 
 class ServiceLink(models.Model):

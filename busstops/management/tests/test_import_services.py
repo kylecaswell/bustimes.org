@@ -6,8 +6,9 @@ from freezegun import freeze_time
 from django.test import TestCase, override_settings
 from django.contrib.gis.geos import Point
 from django.core.management import call_command
-from bustimes.management.commands import import_transxchange, Operator, DataSource, OperatorCode, Service, ServiceLink
-from ...models import Region, StopPoint
+from bustimes.models import Operator, OperatorCode, Service, ServiceLink
+from bustimes.management.commands import import_transxchange
+from ...models import Region, StopPoint, DataSource
 
 
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures')
@@ -38,8 +39,8 @@ class ImportServicesTest(TestCase):
         cls.w = Region.objects.create(pk='W', name='Wales')
         cls.london = Region.objects.create(pk='L', name='London')
 
-        cls.megabus = Operator.objects.create(pk='MEGA', region_id='GB', name='Megabus')
-        cls.fabd = Operator.objects.create(pk='FABD', region_id='S', name='First Aberdeen')
+        cls.megabus = Operator.objects.create(code='MEGA', region_id='GB', name='Megabus')
+        cls.fabd = Operator.objects.create(code='FABD', region_id='S', name='First Aberdeen')
 
         nocs = DataSource.objects.create(name='National Operator Codes', datetime='2018-02-01 00:00+00:00')
         OperatorCode.objects.create(operator=cls.megabus, source=nocs, code='MEGA')
@@ -98,7 +99,7 @@ class ImportServicesTest(TestCase):
         cls.write_files_to_zipfile_and_import('NW.zip', ['NW_04_GMN_2_1.xml', 'NW_04_GMN_2_2.xml',
                                                          'NW_04_GMS_237_1.xml', 'NW_04_GMS_237_2.xml'])
 
-        cls.sc_service = Service.objects.get(pk='ABBN017')
+        cls.sc_service = Service.objects.get(service_code='ABBN017')
 
         # simulate a National Coach Service Database zip file
         ncsd_zipfile_path = os.path.join(FIXTURES_DIR, 'NCSD.zip')
@@ -115,8 +116,8 @@ class ImportServicesTest(TestCase):
         # test re-importing a previously imported service again
         call_command(cls.command, ncsd_zipfile_path)
 
-        cls.gb_m11a = Service.objects.get(pk='M11A_MEGA')
-        cls.gb_m12 = Service.objects.get(pk='M12_MEGA')
+        cls.gb_m11a = Service.objects.get(service_code='M11A_MEGA')
+        cls.gb_m12 = Service.objects.get(service_code='M12_MEGA')
 
     @classmethod
     def write_files_to_zipfile_and_import(cls, zipfile_name, filenames):
