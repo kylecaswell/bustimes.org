@@ -2,7 +2,8 @@ import vcr
 from freezegun import freeze_time
 from django.core.cache import cache
 from django.test import TestCase, override_settings
-from busstops.models import Region, Service, ServiceCode, StopPoint, DataSource, SIRISource, Operator
+from busstops.models import Region, StopPoint, DataSource, SIRISource
+from bustimes.models import Service, ServiceCode, Operator
 from bustimes.models import Route, Calendar, Trip
 
 

@@ -1,8 +1,8 @@
 import vcr
 from freezegun import freeze_time
 from django.test import TestCase, override_settings
-from busstops.models import Region, Service, StopPoint, DataSource, Operator
-from bustimes.models import Route, Calendar, Trip, StopTime
+from busstops.models import Region, Service, StopPoint, DataSource
+from bustimes.models import Route, Calendar, Trip, StopTime, Operator
 
 
 class RifkindTest(TestCase):
@@ -12,7 +12,7 @@ class RifkindTest(TestCase):
 
         destination = StopPoint.objects.create(common_name="Inspector Resnick's house", active=True)
         region = Region.objects.create(id='EM', name='EM')
-        operator = Operator.objects.create(id='TBTN', region=region, name='Trent Burton')
+        operator = Operator.objects.create(code='TBTN', region=region, name='Trent Burton')
         service = Service.objects.create(service_code='skylink', line_name='rainbow one', date='2019-06-08')
         service.operator.add(operator)
         route = Route.objects.create(service=service, source=source)

@@ -2,7 +2,8 @@ from vcr import use_cassette
 from mock import patch
 from django.test import TestCase, override_settings
 from freezegun import freeze_time
-from busstops.models import Region, Operator, DataSource, Service
+from busstops.models import Region, DataSource
+from bustimes.models import Operator, Service
 from ...models import Vehicle, VehicleLocation
 from ..commands import import_live_ziptrip
 
@@ -10,18 +11,18 @@ from ..commands import import_live_ziptrip
 @override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}})
 class ZipTripTest(TestCase):
     def setUp(self):
-        Region.objects.create(id='EA')
-        Operator.objects.create(id='LYNX', region_id='EA')
-        Operator.objects.create(id='CBUS', region_id='EA')
-        Operator.objects.create(id='GAHL', region_id='EA', slug='go-ahead-lichtenstein')
-        Operator.objects.create(id='LGEN', region_id='EA')
-        Operator.objects.create(id='IPSW', region_id='EA')
+        region = Region.objects.create(id='EA')
+        lynx = Operator.objects.create(code='LYNX', region=region)
+        cardiff = Operator.objects.create(code='CBUS', region=region)
+        Operator.objects.create(code='GAHL', region=region, slug='go-ahead-lichtenstein')
+        self.london_general = Operator.objects.create(code='LGEN', region=region)
+        Operator.objects.create(code='IPSW', region=region)
         self.service = Service.objects.create(line_name='7777', date='2010-01-01', service_code='007', slug='foo-foo')
-        self.service.operator.set(['LYNX'])
+        self.service.operator.set([lynx])
 
         now = '2018-08-06T22:41:15+01:00'
         self.source = DataSource.objects.create(datetime=now)
-        self.vehicle = Vehicle.objects.create(code='203', operator_id='CBUS', source=self.source)
+        self.vehicle = Vehicle.objects.create(code='203', operator=cardiff, source=self.source)
 
     def test_handle(self):
         command = import_live_ziptrip.Command()
@@ -45,16 +46,16 @@ class ZipTripTest(TestCase):
 
         self.assertEqual(336, location.heading)
         self.assertNotEqual(self.vehicle, location.journey.vehicle)
-        self.assertEqual('LYNX', location.journey.vehicle.operator_id)
+        self.assertEqual('LYNX', location.journey.vehicle.operator.code)
         self.assertEqual(self.service, location.journey.service)
 
-        self.service.operator.set(['LGEN'])
+        self.service.operator.set([self.london_general])
 
         item['vehicleCode'] = 'LAS_203'
         # Although a vehicle called '203' exists, it belongs to a different operator, so a new one should be created
         command.handle_item(item, self.source.datetime)
         location = VehicleLocation.objects.last()
-        self.assertEqual('GAHL', location.journey.vehicle.operator_id)
+        self.assertEqual('GAHL', location.journey.vehicle.operator.code)
         self.assertNotEqual(self.vehicle, location.journey.vehicle)
         self.assertEqual(self.service, location.journey.service)
 

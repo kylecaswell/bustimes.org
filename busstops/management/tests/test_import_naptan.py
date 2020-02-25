@@ -6,7 +6,8 @@ import vcr
 from warnings import catch_warnings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
-from ...models import Region, AdminArea, StopPoint, Locality, Service, StopUsage
+from bustimes.models import Service, StopUsage
+from ...models import Region, AdminArea, StopPoint, Locality
 from ..commands import (update_naptan, import_stop_areas, import_stops, import_stops_in_area,
                         import_stop_area_hierarchy)
 

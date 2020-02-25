@@ -1,7 +1,8 @@
 import datetime
 from django.contrib.gis.geos import Point
+from bustimes.models import Service
 from ..import_live_vehicles import ImportLiveVehiclesCommand
-from ...models import VehicleLocation, VehicleJourney, Service
+from ...models import VehicleLocation, VehicleJourney
 
 
 class Command(ImportLiveVehiclesCommand):

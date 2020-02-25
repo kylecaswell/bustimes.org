@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 from datetime import timedelta
 from ciso8601 import parse_datetime
@@ -6,9 +7,12 @@ from django.utils import timezone
 from requests.exceptions import RequestException
 from django.contrib.gis.db.models import Extent
 from ..import_live_vehicles import ImportLiveVehiclesCommand
-from busstops.models import Operator, Service, StopPoint
-from bustimes.models import get_calendars, Trip
+from busstops.models import StopPoint
+from bustimes.models import get_calendars, Trip, Operator, Service
 from ...models import VehicleLocation, VehicleJourney
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_latlong(item):
@@ -50,7 +54,7 @@ def get_trip(latest_location, journey, item):
 
 
 class Command(ImportLiveVehiclesCommand):
-    operator_ids = {
+    operator_map = {
         'BOWE': 'HIPK',
         'LAS': ('GAHL', 'LGEN'),
         '767STEP': ('SESX', 'GECL', 'NIBS'),
@@ -64,7 +68,7 @@ class Command(ImportLiveVehiclesCommand):
         'Rtl': ('RBUS', 'GLRB', 'KENN', 'NADS', 'THVB', 'CTNY'),
         'ROST': ('ROST', 'LNUD')
     }
-    operators = {}
+    operator_cache = {}
     source_name = 'ZipTrip'
     url = 'https://ziptrip1.ticketer.org.uk/v1/vehiclepositions'
     ignorable_route_names = {'rr', 'rail', 'transdev', '7777', 'shop', 'pos', 'kiosk', 'rolls-royce'}
@@ -72,6 +76,11 @@ class Command(ImportLiveVehiclesCommand):
     @staticmethod
     def get_datetime(item):
         return parse_datetime(item['reported'])
+
+    def get_operator(self, code):
+        if code not in self.operator_cache:
+            self.operator_cache[code] = Operator.objects.get(code=code)
+        return self.operator_cache[code]
 
     def get_extents(self):
         for operator in (
@@ -99,7 +108,7 @@ class Command(ImportLiveVehiclesCommand):
             'TRDU',
             'ROST',
         ):
-            stops = StopPoint.objects.filter(service__operator=operator, service__current=True)
+            stops = StopPoint.objects.filter(service__operator__code=operator, service__current=True)
             extent = stops.aggregate(Extent('latlong'))['latlong__extent']
             if not extent:
                 print(f'{operator} has no services')
@@ -142,11 +151,11 @@ class Command(ImportLiveVehiclesCommand):
             sleep(1)
 
     def get_vehicle(self, item):
-        operator_id, vehicle = item['vehicleCode'].split('_', 1)
+        operator_code, vehicle = item['vehicleCode'].split('_', 1)
         vehicle = vehicle.replace(' ', '_')
 
-        if operator_id in self.operator_ids:
-            operator_id = self.operator_ids[operator_id]
+        if operator_code in self.operator_map:
+            operator_code = self.operator_map[operator_code]
 
         defaults = {}
         if vehicle.isdigit():
@@ -157,70 +166,67 @@ class Command(ImportLiveVehiclesCommand):
                 defaults['fleet_number'] = fleet_number
 
         defaults['source'] = self.source
-        if type(operator_id) is tuple:
-            if operator_id[0] == 'SESX' or operator_id[0] == 'CUBU' or operator_id == 'RBUS':
-                # vehicles may have multiple operators
-                defaults['operator_id'] = operator_id[0]
-                return self.vehicles.get_or_create(defaults, operator_id__in=operator_id, code=vehicle)
+        if type(operator_code) is tuple:
+            if operator_code[0] == 'SESX' or operator_code[0] == 'CUBU' or operator_code == 'RBUS':
+                # multiple possible vehicle operators
+                defaults['operator'] = self.get_operator(operator_code[0])
+                return self.vehicles.get_or_create(defaults, operator__code__in=operator_code, code=vehicle)
 
-            # services may have multiple operators, not vehicles
-            operator_id = operator_id[0]
+            # multiple possible services operators, but not vehicle operators
+            operator_code = operator_code[0]
 
         try:
-            if operator_id not in self.operators:
-                # cache operators by id to save a query
-                self.operators[operator_id] = Operator.objects.get(id=operator_id)
+            operator = self.get_operator(operator_code)
 
-            if 'fleet_number' in defaults and operator_id in {'IPSW', 'ROST', 'LYNX'}:
+            if 'fleet_number' in defaults and operator_code in {'IPSW', 'ROST', 'LYNX'}:
                 # vehicle codes differ between sources, so use fleet number
                 defaults['code'] = vehicle
 
-                if operator_id == 'ROST':
-                    defaults['operator_id'] = 'ROST'
-                    # query all Transdev Blazefield operators
-                    operator_ids = ('LNUD', 'BPTR', 'HRGT', 'KDTR', 'ROST', 'YCST')
-                    return self.vehicles.get_or_create(defaults, operator_id__in=operator_ids,
+                if operator_code == 'ROST':
+                    defaults['operator'] = operator
+                    return self.vehicles.get_or_create(defaults,
+                                                       operator__parent='Transdev Blazefield',
                                                        fleet_number=defaults['fleet_number'])
 
-                values = self.vehicles.get_or_create(defaults, operator_id=operator_id, fleet_number=fleet_number)
-                if operator_id == 'LYNX' and values[0].code != vehicle:
+                values = self.vehicles.get_or_create(defaults, operator=operator, fleet_number=fleet_number)
+                if operator_code == 'LYNX' and values[0].code != vehicle:
                     values[0].code = vehicle
                     values[0].save(update_fields=['code'])
                 return values
 
-            return self.vehicles.get_or_create(defaults, operator_id=operator_id, code=vehicle)
-        except Operator.DoesNotExist as e:
-            print(e, operator_id)
+            return self.vehicles.get_or_create(defaults, operator=operator, code=vehicle)
+        except Operator.DoesNotExist as error:
+            logger.error(error, exc_info=True)
             return None, None
 
     def get_journey(self, item, vehicle):
         journey = VehicleJourney()
 
-        operator_id = item['vehicleCode'].split('_', 1)[0]
+        operator_code = item['vehicleCode'].split('_', 1)[0]
 
         route_name = item.get('routeName', '')
         if route_name:
             journey.route_name = route_name
 
-        if operator_id == 'BOWE':
+        if operator_code == 'BOWE':
             if route_name == '199':
                 route_name = 'Skyline 199'
             if route_name == 'TP':
                 route_name = 'Transpeak'
-        elif operator_id == '767STEP':
+        elif operator_code == '767STEP':
             if route_name == '2':
                 route_name = 'Breeze 2'
             elif route_name.endswith(' Essex'):
                 route_name = route_name[:-6]
-        elif operator_id == 'UNIB' or operator_id == 'UNO':
+        elif operator_code == 'UNIB' or operator_code == 'UNO':
             if route_name == '690':
                 route_name = 'Inter-campus Shuttle'
-        elif operator_id == 'LYNX' and route_name == '48b':
+        elif operator_code == 'LYNX' and route_name == '48b':
             route_name = '48'
-        elif operator_id == 'CUBU':
+        elif operator_code == 'CUBU':
             if route_name == '157A':
                 route_name = route_name[:-1]
-        elif operator_id == 'IOM':
+        elif operator_code == 'IOM':
             if route_name == 'IMR':
                 route_name = 'Isle of Man Steam Railway'
             elif route_name == 'HT':
@@ -229,12 +235,12 @@ class Command(ImportLiveVehiclesCommand):
                 route_name = 'Manx Electric Railway'
             elif route_name == 'SMR':
                 route_name = 'Snaefell Mountain Railway'
-        elif operator_id == 'Rtl':
+        elif operator_code == 'Rtl':
             if route_name.startswith('K'):
                 route_name = route_name[1:]
 
-        if operator_id in self.operator_ids:
-            operator_id = self.operator_ids[operator_id]
+        if operator_code in self.operator_map:
+            operator_code = self.operator_map[operator_code]
 
         latest = vehicle.latest_location
         if latest and latest.journey.route_name == journey.route_name and latest.journey.service:
@@ -242,15 +248,15 @@ class Command(ImportLiveVehiclesCommand):
             get_trip(latest, journey, item)
         elif route_name:
             services = Service.objects.filter(current=True)
-            if operator_id[0] == 'SESX' and route_name == '1':
+            if operator_code[0] == 'SESX' and route_name == '1':
                 services = services.filter(line_name__in=('1', 'Breeze 1'))
             else:
                 services = services.filter(line_name__iexact=route_name)
 
-            if type(operator_id) is tuple:
-                services = services.filter(operator__in=operator_id)
+            if type(operator_code) is tuple:
+                services = services.filter(operator__code__in=operator_code)
             else:
-                services = services.filter(operator=operator_id)
+                services = services.filter(operator__code=operator_code)
             try:
                 journey.service = self.get_service(services, get_latlong(item))
             except Service.DoesNotExist:
@@ -258,7 +264,7 @@ class Command(ImportLiveVehiclesCommand):
 
             if journey.service:
                 get_trip(latest, journey, item)
-                if operator_id[0] == 'SESX' or operator_id[0] == 'CUBU':
+                if operator_code[0] == 'SESX' or operator_code[0] == 'CUBU':
                     try:
                         operator = journey.service.operator.get()
                         if vehicle.operator_id != operator.id:
@@ -267,8 +273,8 @@ class Command(ImportLiveVehiclesCommand):
                     except Operator.MultipleObjectsReturned:
                         pass
             elif route_name.lower() not in self.ignorable_route_names:
-                if operator_id[0] != 'bus-vannin' and not (operator_id[0] == 'RBUS' and route_name[0] == 'V'):
-                    print(operator_id, route_name)
+                if not (operator_code[0] == 'RBUS' and route_name[0] == 'V'):
+                    print(operator_code, route_name)
 
         return journey
 

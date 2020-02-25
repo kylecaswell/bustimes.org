@@ -2,7 +2,8 @@ import os
 from freezegun import freeze_time
 from vcr import use_cassette
 from django.test import TestCase, override_settings
-from busstops.models import Region, Operator, DataSource
+from busstops.models import Region, DataSource
+from bustimes.models import Operator
 from ...models import Vehicle
 from ..commands import import_tfwm
 
@@ -12,8 +13,8 @@ class TfWMImportTest(TestCase):
     def setUpTestData(cls):
         cls.source = DataSource.objects.create(datetime='2018-08-06T22:41:15+01:00', name='TfWM')
         Region.objects.create(id='WM')
-        Operator.objects.create(id='SLBS', region_id='WM', name='Select Bus Services')
-        Operator.objects.create(id='FSMR', region_id='WM', name='First Midland Red')
+        Operator.objects.create(code='SLBS', region_id='WM', name='Select Bus Services')
+        Operator.objects.create(code='FSMR', region_id='WM', name='First Midland Red')
 
     @use_cassette(os.path.join('data', 'vcr', 'import_tfwm.yaml'), decode_compressed_response=True)
     @freeze_time('2018-08-21 00:00:09')

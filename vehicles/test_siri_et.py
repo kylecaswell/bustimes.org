@@ -1,7 +1,8 @@
 from django.test import TestCase, override_settings
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
-from busstops.models import DataSource, Region, Operator, StopPoint
+from busstops.models import DataSource, Region, StopPoint
+from bustimes.models import Operator
 from .models import VehicleLocation, Call
 from .tasks import handle_siri_vm, handle_siri_et
 

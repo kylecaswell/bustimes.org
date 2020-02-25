@@ -3,7 +3,8 @@ import xml.etree.cElementTree as ET
 from mock import patch
 from vcr import use_cassette
 from django.test import TestCase
-from busstops.models import Region, Operator, Service, OperatorCode, DataSource
+from busstops.models import Region, DataSource
+from bustimes.models import Operator, Service, OperatorCode
 from ...models import VehicleLocation, JourneyCode
 from ..commands import import_sirivm
 

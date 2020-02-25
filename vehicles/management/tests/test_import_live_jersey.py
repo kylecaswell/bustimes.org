@@ -2,7 +2,8 @@ import os
 from freezegun import freeze_time
 from vcr import use_cassette
 from django.test import TestCase
-from busstops.models import Region, Operator, DataSource
+from busstops.models import Region, DataSource
+from bustimes.models import Operator
 from ..commands import import_live_jersey
 
 

@@ -3,7 +3,8 @@ from mock import patch
 from freezegun import freeze_time
 from django.test import TestCase
 from django.utils import timezone
-from busstops.models import DataSource, Region, Operator, Service
+from busstops.models import DataSource, Region
+from bustimes.models import Operator, Service
 from ..commands.import_stagecoach import Command
 
 
