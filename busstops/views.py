@@ -434,7 +434,7 @@ class OperatorDetailView(DetailView):
         context['services'] = sorted(self.object.service_set.filter(current=True).defer('geometry'),
                                      key=Service.get_order)
         if context['services']:
-            context['notes'] = self.object.note_set.all()
+            context['notes'] = self.object.notes.all()
             context['modes'] = {service.mode for service in context['services'] if service.mode}
             context['breadcrumb'] = [self.object.region]
         return context

@@ -14,7 +14,7 @@ class ZipTripTest(TestCase):
         region = Region.objects.create(id='EA')
         lynx = Operator.objects.create(code='LYNX', region=region)
         cardiff = Operator.objects.create(code='CBUS', region=region)
-        Operator.objects.create(code='GAHL', region=region, slug='go-ahead-lichtenstein')
+        self.go_ahead_london = Operator.objects.create(code='GAHL', region=region, slug='go-ahead-lichtenstein')
         self.london_general = Operator.objects.create(code='LGEN', region=region)
         Operator.objects.create(code='IPSW', region=region)
         self.service = Service.objects.create(line_name='7777', date='2010-01-01', service_code='007', slug='foo-foo')
@@ -63,15 +63,15 @@ class ZipTripTest(TestCase):
 
         with self.assertNumQueries(2):
             with freeze_time('2018-08-31T21:35:04+00:00'):
-                response = self.client.get('/vehicles.json?service=007').json()
+                response = self.client.get(f'/vehicles.json?service={self.service.id}').json()
         self.assertEqual(2, len(response['features']))
 
         with self.assertNumQueries(1):
             with freeze_time('2018-08-31T22:55:04+00:00'):
-                response = self.client.get('/vehicles.json?service=007').json()
+                response = self.client.get(f'/vehicles.json?service={self.service.id}').json()
         self.assertEqual(0, len(response['features']))
 
-        self.service.operator.set(['LGEN', 'GAHL'])
+        self.service.operator.set([self.london_general, self.go_ahead_london])
 
         response = self.client.get('/operators/go-ahead-lichtenstein')
         self.assertContains(response, 'fleet list')
@@ -128,7 +128,8 @@ class ZipTripTest(TestCase):
             "received": "2018-08-31T21:30:15.8465176+00:00",
             "bearing": -24,
         }
-        command.handle_item(item, self.source.datetime)
+        with self.assertLogs(level='ERROR'):
+            command.handle_item(item, self.source.datetime)
         self.assertFalse(VehicleLocation.objects.all())
 
     def test_fleet_number(self):
