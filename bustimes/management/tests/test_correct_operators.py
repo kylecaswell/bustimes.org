@@ -14,12 +14,12 @@ class CorrectOperatorsTest(TestCase):
 
         cls.goodwins = Operator.objects.create(
             region=cls.east,
-            pk='GDWN',
+            code='GDWN',
             name='Go Goodwins'
         )
         cls.tellings = Operator.objects.create(
             region=cls.east,
-            pk='TGML',
+            code='TGML',
             name='Tellings Golden Miller'
         )
 

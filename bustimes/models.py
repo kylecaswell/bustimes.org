@@ -65,6 +65,7 @@ class Operator(ValidateOnSaveMixin, models.Model):
     phone = models.CharField(max_length=128, blank=True)
     twitter = models.CharField(max_length=255, blank=True)
 
+    notes = models.ManyToManyField('Note', blank=True)
     licences = models.ManyToManyField('vosa.Licence', blank=True)
     payment_methods = models.ManyToManyField('PaymentMethod', blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
@@ -167,6 +168,8 @@ class Service(models.Model):
     tracking = models.NullBooleanField()
     payment_methods = models.ManyToManyField('PaymentMethod', blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
+
+    notes = models.ManyToManyField('Note', blank=True)
 
     class Meta():
         unique_together = ('service_code', 'source')

@@ -139,7 +139,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         region = Region.objects.update_or_create(id='GG', defaults={'name': 'Guernsey'})[0]
-        operator = Operator.objects.update_or_create(id='guernsey', name='Guernsey Buses', region=region)[0]
+        operator = Operator.objects.update_or_create(code='guernsey', name='Guernsey Buses', region=region)[0]
 
         session = requests.Session()
 

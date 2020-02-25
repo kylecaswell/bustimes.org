@@ -425,7 +425,7 @@ class OperatorDetailView(DetailView):
                     return get_object_or_404(self.queryset, operatorcode__code=self.kwargs['slug'],
                                              operatorcode__source__name='slug')
                 except Http404:
-                    self.kwargs['pk'] = self.kwargs['slug'].upper()
+                    self.kwargs['code'] = self.kwargs['slug'].upper()
                     return super().get_object(**kwargs)
             raise e
 
@@ -461,7 +461,7 @@ class ServiceDetailView(DetailView):
         try:
             return super().get_object(**kwargs)
         except Http404:
-            self.kwargs['pk'] = self.kwargs['slug']
+            self.kwargs['service_code'] = self.kwargs['slug']
             return super().get_object(**kwargs)
 
     def get_context_data(self, **kwargs):
@@ -471,8 +471,7 @@ class ServiceDetailView(DetailView):
             return context
 
         context['operators'] = self.object.operator.all()
-        context['notes'] = Note.objects.filter(Q(operators__in=context['operators']) | Q(services=self.object)
-                                               | Q(services=None, operators=None))
+        context['notes'] = Note.objects.filter(Q(operator__in=context['operators']) | Q(service=self.object))
         context['links'] = []
 
         context['related'] = self.object.get_similar_services()

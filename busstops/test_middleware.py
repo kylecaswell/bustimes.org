@@ -5,9 +5,9 @@ from .models import Region, Service
 class MiddlewareTests(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.north = Region.objects.create(pk='N', name='North')
+        cls.north = Region.objects.create(id='N', name='North')
         cls.service = Service.objects.create(
-            pk='ea_21-45-A-y08',
+            service_code='ea_21-45-A-y08',
             line_name='45A',
             date='1984-01-01',
             region=cls.north

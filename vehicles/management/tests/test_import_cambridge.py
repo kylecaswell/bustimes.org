@@ -22,7 +22,7 @@ class CambridgeImportTest(TestCase):
         cls.command = import_cambridge.Command()
         cls.command.source = DataSource.objects.create(name='cambridge', datetime='2019-01-20T16:16:53+00:00')
         Region.objects.create(id='EA', name='East Anglia')
-        Operator.objects.create(id='SCCM', region_id='EA', name='Stagecoach Cumbernauld')
+        Operator.objects.create(code='SCCM', region_id='EA', name='Stagecoach Cumbernauld')
 
     @freeze_time('2019-01-20T16:17:53+00:00')
     def test_handle_data(self):

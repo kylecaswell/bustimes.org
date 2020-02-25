@@ -2,7 +2,8 @@ import requests
 from django.contrib.gis.geos import Point, LineString, MultiLineString
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from ...models import Region, Service, Operator, StopPoint
+from bustimes.models import Service, Operator
+from ...models import Region, StopPoint
 from .import_guernsey import import_stops, import_routes
 
 
@@ -24,7 +25,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         region = Region.objects.update_or_create(id='JE', defaults={'name': 'Jersey'})[0]
-        operator = Operator.objects.update_or_create(id='libertybus', name='Liberty Bus', region=region)[0]
+        operator = Operator.objects.update_or_create(code='libertybus', name='Liberty Bus', region=region)[0]
 
         import_stops(region)
 
