@@ -271,7 +271,7 @@ class ImportServicesTest(TestCase):
         )
 
         self.assertEqual(res.context_data['breadcrumb'], [self.gb, self.megabus])
-        self.assertTemplateUsed(res, 'busstops/service_detail.html')
+        self.assertTemplateUsed(res, 'bustimes/service_detail.html')
         self.assertContains(res, '<h1>M11A - Belgravia - Liverpool</h1>')
         self.assertContains(res, '<option selected value="2017-01-22">Sunday 22 January 2017</option>')
         self.assertContains(
@@ -331,7 +331,7 @@ class ImportServicesTest(TestCase):
 
         res = self.client.get(service.get_absolute_url())
         self.assertEqual(res.context_data['breadcrumb'], [self.sc, self.fabd])
-        self.assertTemplateUsed(res, 'busstops/service_detail.html')
+        self.assertTemplateUsed(res, 'bustimes/service_detail.html')
         self.assertContains(res, '<td rowspan="63">then every 30 minutes until</td>', html=True)
 
         timetable = res.context_data['timetable']

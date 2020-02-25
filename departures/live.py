@@ -14,7 +14,8 @@ from django.db import DatabaseError
 from django.db.models import Q
 from django.utils import timezone
 from busstops.models import SIRISource, DataSource
-from bustimes.models import get_calendars, StopTime, Service, ServiceCode
+from bustimes.timetables import get_calendars
+from bustimes.models import StopTime, Service, ServiceCode
 from vehicles.models import Vehicle, VehicleJourney
 from vehicles.tasks import create_service_code, create_journey_code
 

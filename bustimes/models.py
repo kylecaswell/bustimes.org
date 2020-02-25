@@ -1,7 +1,6 @@
 import re
 import yaml
 import time
-# from datetime import date
 from urllib.parse import urlencode, quote
 from autoslug import AutoSlugField
 from django.db.models import Q
@@ -11,8 +10,6 @@ from django.contrib.postgres.fields import DateRangeField
 from django.core.cache import cache
 from django.urls import reverse
 from multigtfs.models import Feed
-# from timetables import gtfs
-# from .timetables import Timetable
 
 
 TIMING_STATUS_CHOICES = (
@@ -22,22 +19,6 @@ TIMING_STATUS_CHOICES = (
     ('OTH', 'Other bus stop'),
 )
 SERVICE_ORDER_REGEX = re.compile(r'(\D*)(\d*)(\D*)')
-
-
-def get_calendars(when, calendar_ids=None):
-    calendars = Calendar.objects.filter(start_date__lte=when)
-    calendar_dates = CalendarDate.objects.filter(Q(end_date__gte=when) | Q(end_date=None),
-                                                 start_date__lte=when)
-    if calendar_ids is not None:
-        # cunningly make the query faster
-        calendars = calendars.filter(id__in=calendar_ids)
-        calendar_dates = calendar_dates.filter(calendar__in=calendar_ids)
-    exclusions = calendar_dates.filter(operation=False)
-    inclusions = calendar_dates.filter(operation=True)
-    special_inclusions = inclusions.filter(special=True)
-    return calendars.filter(Q(end_date__gte=when) | Q(end_date=None),
-                            ~Q(calendardate__in=exclusions) | Q(calendardate__in=inclusions),
-                            Q(**{when.strftime('%a').lower(): True}) | Q(calendardate__in=special_inclusions))
 
 
 class ValidateOnSaveMixin:
@@ -467,6 +448,9 @@ class CalendarDate(models.Model):
 class Note(models.Model):
     code = models.CharField(max_length=16)
     text = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.text
 
     def get_absolute_url(self):
         return self.trip_set.first().route.service.get_absolute_url()

@@ -7,7 +7,8 @@ from django.contrib.gis.geos import Point, Polygon
 from django.contrib.gis.db.models import Extent
 from django.utils import timezone
 from busstops.models import Service, Locality
-from bustimes.models import get_calendars, Trip
+from bustimes.timetables import get_calendars
+from bustimes.models import Trip
 from ...models import Vehicle, VehicleLocation, VehicleJourney
 from ..import_live_vehicles import ImportLiveVehiclesCommand
 

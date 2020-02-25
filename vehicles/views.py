@@ -16,7 +16,8 @@ from django.utils import timezone
 from multidb.pinning import use_primary_db
 from busstops.utils import get_bounding_box
 from busstops.models import SIRISource, DataSource
-from bustimes.models import get_calendars, Trip, Operator, Service, ServiceCode
+from bustimes.timetables import get_calendars
+from bustimes.models import Trip, Operator, Service, ServiceCode
 from .models import Vehicle, VehicleLocation, VehicleJourney, VehicleEdit
 from .forms import EditVehiclesForm, EditVehicleForm
 from .management.commands import import_sirivm

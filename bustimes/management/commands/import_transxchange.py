@@ -482,7 +482,7 @@ class Command(BaseCommand):
                 service.operator.set(operators)
                 if service_code not in self.service_codes:
                     self.service_codes.add(service_code)
-                    self.source.route_set.filter(service=service_code).delete()
+                    self.source.route_set.filter(service=service).delete()
                     service.stops.clear()
             for stop_usage in stop_usages:
                 stop_usage.service = service

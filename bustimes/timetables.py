@@ -2,7 +2,11 @@ import datetime
 from difflib import Differ
 from functools import cmp_to_key
 from django.core.cache import cache
-from .models import get_calendars, Calendar, Trip
+from django.db.models import Q
+from timetables import gtfs
+from multigtfs.models import Feed
+from .models import Route, Calendar, CalendarDate, Trip, Service
+
 
 differ = Differ(charjunk=lambda _: True)
 
@@ -71,6 +75,62 @@ def get_stop_usages(trips):
             y += 1
 
     return groupings
+
+
+def get_calendars(when, calendar_ids=None):
+    calendars = Calendar.objects.filter(start_date__lte=when)
+    calendar_dates = CalendarDate.objects.filter(Q(end_date__gte=when) | Q(end_date=None),
+                                                 start_date__lte=when)
+    if calendar_ids is not None:
+        # cunningly make the query faster
+        calendars = calendars.filter(id__in=calendar_ids)
+        calendar_dates = calendar_dates.filter(calendar__in=calendar_ids)
+    exclusions = calendar_dates.filter(operation=False)
+    inclusions = calendar_dates.filter(operation=True)
+    special_inclusions = inclusions.filter(special=True)
+    return calendars.filter(Q(end_date__gte=when) | Q(end_date=None),
+                            ~Q(calendardate__in=exclusions) | Q(calendardate__in=inclusions),
+                            Q(**{when.strftime('%a').lower(): True}) | Q(calendardate__in=special_inclusions))
+
+
+def get_timetable(service, day=None, related=()):
+    """Given a Service, return a Timetable"""
+
+    if service.region_id == 'NI':
+        return Timetable(service.route_set.all(), day)
+
+    if service.source and service.source.name.endswith(' GTFS'):
+        if day is None:
+            day = datetime.date.today()
+
+        service_codes = service.servicecode_set.filter(scheme__endswith=' GTFS')
+        routes = []
+        for service_code in service_codes:
+            try:
+                routes += service_code.get_routes()
+            except Feed.DoesNotExist:
+                continue
+        return gtfs.get_timetable(routes, day)
+
+    routes = Route.objects.filter(service__in=[service] + related).order_by('start_date')
+    try:
+        timetable = Timetable(routes, day)
+    except (IndexError, UnboundLocalError):
+        return
+    if timetable.date:
+        for route in routes:
+            if route.start_date > timetable.date:
+                service.timetable_change = route.start_date
+                break
+
+    # timetable.service = self
+    # timetable.set_description(self.description)
+    # timetable.groupings = [g for g in timetable.groupings if g.rows and g.rows[0].times]
+
+    return timetable
+
+
+Service.get_timetable = get_timetable
 
 
 class Timetable:

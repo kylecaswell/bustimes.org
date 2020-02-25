@@ -2,7 +2,8 @@ import os
 from vcr import use_cassette
 from django.test import TestCase
 from django.core.management import call_command
-from ...models import Region, Service, StopPoint, StopUsage
+from bustimes.models import Service, StopUsage
+from ...models import Region, StopPoint
 
 
 class ImportTfLTest(TestCase):

@@ -562,8 +562,8 @@ class ServiceDetailView(DetailView):
 
 
 @cache_control(max_age=86400)
-def service_map_data(request, pk):
-    service = get_object_or_404(Service.objects.only('geometry'), pk=pk)
+def service_map_data(request, service_id):
+    service = get_object_or_404(Service.objects.only('geometry'), id=service_id)
     stops = StopPoint.objects.filter(service=service, latlong__isnull=False)
     stops = stops.distinct().order_by().select_related('locality')
     data = {

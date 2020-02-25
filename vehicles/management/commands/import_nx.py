@@ -6,7 +6,8 @@ from requests import RequestException
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 from busstops.models import Service
-from bustimes.models import get_calendars, Trip
+from bustimes.timetables import get_calendars
+from bustimes.models import Trip
 from ...models import VehicleLocation, VehicleJourney
 from ..import_live_vehicles import ImportLiveVehiclesCommand
 

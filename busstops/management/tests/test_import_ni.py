@@ -3,7 +3,7 @@
 import os
 import vcr
 from django.test import TestCase
-from ...models import StopPoint, Region, AdminArea, Service, StopUsage
+from ...models import StopPoint, Region, AdminArea  #, Service, StopUsage
 from ..commands import import_ni_stops, enhance_ni_stops
 from .test_import_nptg import ImportNPTGTest
 
@@ -22,10 +22,10 @@ class ImportNornIronTest(TestCase):
         cls.ni_stops = StopPoint.objects.filter(atco_code__startswith='700')
         cls.ni = Region(id='NI', name='Northern Ireland').save()
 
-        # Create a dummy active service
-        cls.service = Service.objects.create(service_code='DUMMY', date='2016-12-27', region_id='NI')
-        # Use a stop which is near a landmark
-        StopUsage.objects.create(service=cls.service, stop_id='700000000007', order=0)
+        # # # Create a dummy active service
+        # # cls.service = Service.objects.create(service_code='DUMMY', date='2016-12-27', region_id='NI')
+        # # # Use a stop which is near a landmark
+        # StopUsage.objects.create(service=cls.service, stop_id='700000000007', order=0)
 
         AdminArea.objects.create(region_id='NI', id='700', atco_code='700', name='Down')
 

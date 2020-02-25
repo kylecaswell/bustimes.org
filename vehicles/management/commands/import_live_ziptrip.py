@@ -8,7 +8,8 @@ from requests.exceptions import RequestException
 from django.contrib.gis.db.models import Extent
 from ..import_live_vehicles import ImportLiveVehiclesCommand
 from busstops.models import StopPoint
-from bustimes.models import get_calendars, Trip, Operator, Service
+from bustimes.timetables import get_calendars
+from bustimes.models import Trip, Operator, Service
 from ...models import VehicleLocation, VehicleJourney
 
 

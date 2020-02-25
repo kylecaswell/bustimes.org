@@ -7,7 +7,8 @@ from django.db import transaction
 from django.utils import timezone
 from multidb.pinning import use_primary_db
 from busstops.models import DataSource
-from bustimes.models import get_calendars, Trip, Service
+from bustimes.timetables import get_calendars
+from bustimes.models import Trip, Service
 from .models import Vehicle, VehicleLocation, VehicleJourney
 from .management.import_live_vehicles import calculate_bearing
 

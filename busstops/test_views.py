@@ -146,7 +146,7 @@ class ViewsTests(TestCase):
         cls.note = Note.objects.create(
             text='Mind your head'
         )
-        cls.note.operators.set((cls.chariots,))
+        cls.note.operator_set.set((cls.chariots,))
 
     def test_index(self):
         """Home page works and doesn't contain a breadcrumb"""
@@ -286,9 +286,6 @@ class ViewsTests(TestCase):
         self.assertContains(response, 'Sorry, it looks like no services currently stop at', status_code=404)
 
     def test_operator_found(self):
-        """The normal and Accelerated Mobile pages versions should be mostly the same
-        (but slightly different)
-        """
         response = self.client.get('/operators/ains')
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'An airline operator in')
@@ -303,7 +300,7 @@ class ViewsTests(TestCase):
 
     def test_operator_not_found(self):
         """An operator with no services, or that doesn't exist, should should return a 404 response"""
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(3):
             response = self.client.get('/operators/VENT')
             self.assertContains(response, 'Page not found', status_code=404)
 
@@ -368,7 +365,7 @@ class ViewsTests(TestCase):
 
     def test_service_map_data(self):
         with self.assertNumQueries(2):
-            response = self.client.get('/services/45A.json')
+            response = self.client.get(f'/services/{self.service.id}.json')
         self.assertEqual(response['Content-Type'], 'application/json')
         self.assertEqual(response.status_code, 200)
 
