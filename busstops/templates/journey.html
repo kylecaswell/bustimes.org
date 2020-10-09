@@ -6,40 +6,87 @@
 
 {% block content %}
 
-<h1>
-    {% if from and to %}
-        {{ from }} to {{ to }}
-    {% else %}
-        Plan a journey
-    {% endif %}
-</h1>
+<h1>Plan a journey</h1>
+
+<style>
+    .options {
+        position: absolute;
+        background: #fff;
+        right: 0;
+        width: 10.75em;
+        top: 3.125em;
+        border: 1px solid #fe9;
+        z-index: 999;
+    }
+
+    .options a {
+        padding-left: .25em;
+    }
+
+    label {
+        display: block;
+        float: left;
+        position: relative;
+    }
+</style>
 
 <form method="GET" action="/journey">
-    <label>From <input name="from_q" value="{{ from_q }}"></label>
-    {% if from %}
-        <input name="from" value="{{ from.slug }}" type="hidden">
-    {% elif from_options %}
-        <ul>
-            {% for option in from_options %}
-                <li><a href="/journey?from={{ option.object.slug }}&amp;to{% if to %}={{ to.slug }}{% else %}_q={{ to_q }}{% endif %}">{{ option.object.get_qualified_name }}</a></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-    <label>to <input name="to_q" value="{{ to_q }}"></label>
-    {% if to %}
-        <input name="to" value="{{ to.slug }}" type="hidden">
-    {% elif to_options %}
-        <ul>
-            {% for option in to_options %}
-                <li><a href="/journey?from{% if from %}={{ from.slug }}{% else %}_q={{ from_q }}{% endif %}&amp;to={{ option.object.slug }}">{{ option.object.get_qualified_name }}</a></li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <label>From <input name="from_q" value="{{ from_q }}" type="search">
+        {% if from %}
+            <input name="from" value="{{ from.slug }}" type="hidden">
+        {% elif from_options %}
+            <ul class="options">
+                {% for option in from_options %}
+                    <li><a href="/journey?from={{ option.slug }}&amp;to{% if to %}={{ to.slug }}{% else %}_q={{ to_q }}{% endif %}">{{ option.get_qualified_name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </label>
+    <label>to <input name="to_q" value="{{ to_q }}" type="search">
+        {% if to %}
+            <input name="to" value="{{ to.slug }}" type="hidden">
+        {% elif to_options %}
+            <ul class="options">
+                {% for option in to_options %}
+                    <li><a href="/journey?from{% if from %}={{ from.slug }}{% else %}_q={{ from_q }}{% endif %}&amp;to={{ option.slug }}">{{ option.get_qualified_name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </label>
     <input type="submit" value="Search">
 </form>
 
+{% if from and to %}
+    <h2>{{ from }} to {{ to }}</h2>
+{% endif %}
+
+
 {% if plan %}
-    {{ plan }}
+    <p>Source: {{ plan.source }}</p>
+    <p>Acknowledgements: {{ plan.acknowledgements }}</p>
+
+    {% for route in plan.routes %}
+        <h3>{{ route.departure_date }} {{ route.departure_time }}–{{ route.arrival_time }} ({{ route.duration }})</h3>
+        <table>
+            {% for part in route.route_parts %}
+                <tr>
+                    <td>{{ part.departure_time }}</td>
+                    <td>
+                        {% if part.mode == 'foot' %}
+                            walk 
+                        {% else %}
+                            {{ part.mode }} {{ part.line_name }}
+                        {% endif %}
+                    </td>
+                    <td>{{ part.to_point_name }}</td>
+                    <td>{{ part.arrival_time }}</td>
+                    <!-- <td>{{ part }}</td> -->
+                </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+
+
 {% endif %}
 
 {% endblock %}
