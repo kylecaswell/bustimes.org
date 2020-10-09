@@ -19,6 +19,7 @@ from django.contrib.sitemaps import Sitemap
 from django.core.cache import cache
 from django.core.mail import EmailMessage
 from departures import live
+from journeyplanner import journeyplanner
 from disruptions.models import Situation, Consequence, StopSuspension
 from .utils import format_gbp, get_bounding_box
 from .models import (Region, StopPoint, AdminArea, Locality, District, Operator,
@@ -769,13 +770,6 @@ def journey(request):
     else:
         to_options = None
 
-    journeys = None
-    # if origin and destination:
-    #     journeys = Journey.objects.filter(
-    #         stopusageusage__stop__locality=origin
-    #     ).filter(stopusageusage__stop__locality=destination)
-    # else:
-    #     journeys = None
 
     return render(request, 'journey.html', {
         'from': origin,
@@ -784,5 +778,5 @@ def journey(request):
         'to': destination,
         'to_q': to_q or destination or '',
         'to_options': to_options,
-        'journeys': journeys
+        'plan': journeyplanner.transportapi(origin, destination)
     })

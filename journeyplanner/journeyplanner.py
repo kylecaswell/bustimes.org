@@ -6,17 +6,18 @@ from django.core.cache import cache
 SESSION = requests.Session()
 
 
-def journey(origin, destination):
+def transportapi(origin, destination):
+    if not (origin and destination):
+        return
+
     url = 'https://transportapi.com/v3/uk/public/journey/from/lonlat:{},{}/to/lonlat:{},{}.json'.format(
         origin.latlong.x, origin.latlong.y, destination.latlong.x, destination.latlong.y
     )
     json = cache.get(url)
-    print(url)
     if not json:
-        params = {
-            'app_id': settings.TRANSPORTAPI_APP_ID,
-            'app_key': settings.TRANSPORTAPI_APP_KEY,
-        }
-        json = SESSION.get(url, params=params).json()
+        params = settings.TRANSPORTAPI
+        response = SESSION.get(url, params=params)
+        print(response.url)
+        json = response.json()
         cache.set(url, json)
     return json
