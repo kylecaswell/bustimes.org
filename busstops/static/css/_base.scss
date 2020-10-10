@@ -158,6 +158,11 @@ form ul {
     text-transform: uppercase;
 }
 
+label img {
+    margin: 0 .5em;
+    vertical-align: text-top;
+}
+
 header {
     background: $brand-color;
     overflow: hidden;

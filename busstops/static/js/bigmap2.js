@@ -9,13 +9,31 @@
             minZoom: 10
         }),
         stopsGroup = L.layerGroup(),
-        vehiclesGroup = L.layerGroup();
+        vehiclesGroup = L.layerGroup(),
+        mapStyle = 'alidade_smooth',
+        tileLayer;
 
     map.attributionControl.setPrefix('');
 
-    L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
-        attribution: '<a href="https://stadiamaps.com/">© Stadia Maps</a> <a href="https://openmaptiles.org/">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/about/">© OpenStreetMap contributors</a>',
-    }).addTo(map);
+    if (localStorage && localStorage.mapStyle) {
+        mapStyle = localStorage.mapStyle;
+    }
+
+    function setMapStyle(mapStyle) {
+        if (tileLayer) {
+            map.removeLayer(tileLayer);
+        }
+        tileLayer = L.tileLayer('https://tiles.stadiamaps.com/tiles/' + mapStyle + '/{z}/{x}/{y}{r}.png', {
+            attribution: '<a href="https://stadiamaps.com/">© Stadia Maps</a> <a href="https://openmaptiles.org/">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/about/">© OpenStreetMap contributors</a>',
+        }).addTo(map);
+    }
+    setMapStyle(mapStyle);
+
+    window.addEventListener('storage', function(event) {
+        if (event.key === 'mapStyle') {
+            setMapStyle(localStorage.mapStyle);
+        }
+    });
 
     L.control.locate().addTo(map);
 
