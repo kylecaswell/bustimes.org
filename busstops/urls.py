@@ -7,7 +7,6 @@ from bustimes.urls import urlpatterns as bustimes_views
 from disruptions.urls import urlpatterns as disruptions_urls
 from vehicles.urls import urlpatterns as vehicles_urls
 from vosa.urls import urlpatterns as vosa_urls
-from fares.urls import urlpatterns as fares_urls
 from . import views
 
 sitemaps = {
@@ -44,7 +43,6 @@ urlpatterns = [
     path('search', views.search),
     path('journey', views.journey),
     path('.well-known/change-password', views.change_password),
-    path('fares/', include(fares_urls))
 ] + bustimes_views + disruptions_urls + vehicles_urls + vosa_urls
 
 

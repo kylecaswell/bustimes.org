@@ -1,0 +1,21 @@
+{% extends 'page.html' %}
+
+{% block title %}Blog – bustimes.org{% endblock %}
+
+{% block bodyclass %}narrow{% endblock %}
+
+{% block content %}
+
+{% for post in post_list %}
+
+<article>
+    <h1>{{ post.title }}</h1>
+
+    <p>{{ post.datetime|date }}</p>
+
+    {{ post.text }}
+</article>
+
+{% endfor %}
+
+{% endblock %}

@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'django.contrib.sitemaps',
+    'blog',
     'busstops',
     'bustimes',
     'disruptions',
